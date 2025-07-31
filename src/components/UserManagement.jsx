@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { Plus, Edit2, Trash2, UserPlus } from 'lucide-react';
-import axios from 'axios';
+import api from '../services/api';
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -22,7 +22,7 @@ const UserManagement = () => {
   const loadUsers = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:5000/api/users');
+      const response = await api.get('/users');
       setUsers(response.data.users || []);
     } catch (error) {
       console.error('Error loading users:', error);
@@ -60,11 +60,11 @@ const UserManagement = () => {
           updateData.password = formData.password;
         }
         
-        await axios.put(`http://localhost:5000/api/users/${editingUser.userid}`, updateData);
+        await api.put(`/users/${editingUser.userid}`, updateData);
         toast.success('User updated successfully');
       } else {
         // Create new user
-        await axios.post('http://localhost:5000/api/users', formData);
+        await api.post('/users', formData);
         toast.success('User created successfully');
       }
       
@@ -84,7 +84,7 @@ const UserManagement = () => {
     }
 
     try {
-      await axios.delete(`http://localhost:5000/api/users/${userid}`);
+      await api.delete(`/users/${userid}`);
       toast.success('User deleted successfully');
       loadUsers();
     } catch (error) {
