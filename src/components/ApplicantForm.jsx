@@ -13,7 +13,7 @@ import {
   MapPin,
 } from "lucide-react";
 import { format } from "date-fns";
-import axios from "axios";
+import api from "../services/api";
 
 // JOB_ROLES will be loaded dynamically from backend
 
@@ -53,8 +53,8 @@ const ApplicantForm = ({
   const loadPresets = async () => {
     try {
       const [companiesResponse, positionsResponse] = await Promise.all([
-        axios.get('http://localhost:5000/api/companies'),
-        axios.get('http://localhost:5000/api/positions')
+        api.get('/companies'),
+        api.get('/positions')
       ]);
       setCompanies(companiesResponse.data.companies || []);
       setPositions(positionsResponse.data.positions || []);
