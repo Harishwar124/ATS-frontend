@@ -28,18 +28,31 @@ export const AuthProvider = ({ children }) => {
   // Verify token on app load
   useEffect(() => {
     const verifyToken = async () => {
+      console.log('🔍 Token Verification Debug:');
+      console.log('  Token exists:', !!token);
+      console.log('  API Base URL:', api.defaults.baseURL);
+      
       if (token) {
         try {
+          console.log('  Attempting token verification...');
           const response = await api.get('/auth/verify');
+          console.log('  Verification response:', response.data);
+          
           if (response.data.success) {
+            console.log('  Token valid, setting user');
             setUser(response.data.user);
           } else {
+            console.log('  Token invalid, logging out');
             logout();
           }
         } catch (error) {
-          console.error('Token verification failed:', error);
+          console.error('  Token verification error:', error);
+          console.error('  Error response:', error.response);
+          console.error('  Error status:', error.response?.status);
           logout();
         }
+      } else {
+        console.log('  No token found, skipping verification');
       }
       setIsLoading(false);
     };
@@ -48,14 +61,22 @@ export const AuthProvider = ({ children }) => {
   }, [token]);
 
   const login = async (userid, password) => {
+    console.log('🔐 Login Debug:');
+    console.log('  Attempting login for userid:', userid);
+    console.log('  API Base URL:', api.defaults.baseURL);
+    
     try {
+      console.log('  Making login request...');
       const response = await api.post('/auth/login', {
         userid,
         password
       });
 
+      console.log('  Login response received:', response.data);
+
       if (response.data.success) {
         const { token: newToken, user: userData } = response.data;
+        console.log('  Login successful, setting token and user data');
         setToken(newToken);
         setUser(userData);
         localStorage.setItem('token', newToken);
@@ -65,9 +86,15 @@ export const AuthProvider = ({ children }) => {
         const message = response.data.message === 'Invalid credentials' 
           ? 'Check username and password' 
           : response.data.message;
+        console.log('  Login failed with message:', message);
         return { success: false, message };
       }
     } catch (error) {
+      console.error('  Login error caught:', error);
+      console.error('  Error response:', error.response);
+      console.error('  Error status:', error.response?.status);
+      console.error('  Error data:', error.response?.data);
+      
       const errorMessage = error.response?.data?.message || 'Login failed';
       const message = errorMessage === 'Invalid credentials' 
         ? 'Check username and password' 
