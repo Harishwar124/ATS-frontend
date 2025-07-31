@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { Plus, Edit2, Trash2, Building, Briefcase, Settings } from 'lucide-react';
-import axios from 'axios';
+import api from '../services/api';
 
 const PresetsManagement = () => {
   const [activeTab, setActiveTab] = useState('companies');
@@ -21,10 +21,10 @@ const PresetsManagement = () => {
     try {
       setLoading(true);
       if (activeTab === 'companies') {
-        const response = await axios.get('http://localhost:5000/api/companies');
+        const response = await api.get('/companies');
         setCompanies(response.data.companies || []);
       } else {
-        const response = await axios.get('http://localhost:5000/api/positions');
+        const response = await api.get('/positions');
         setPositions(response.data.positions || []);
       }
     } catch (error) {
@@ -54,17 +54,16 @@ const PresetsManagement = () => {
     setFormLoading(true);
 
     try {
-      const apiEndpoint = `http://localhost:5000/api/${activeTab}`;
       const dataField = activeTab === 'companies' ? 'companyName' : 'positionName';
       const requestData = { [dataField]: formData.name };
 
       if (editingItem) {
         // Update item
-        await axios.put(`${apiEndpoint}/${editingItem._id}`, requestData);
+        await api.put(`/${activeTab}/${editingItem._id}`, requestData);
         toast.success(`${activeTab.slice(0, -1)} updated successfully`);
       } else {
         // Create new item
-        await axios.post(apiEndpoint, requestData);
+        await api.post(`/${activeTab}`, requestData);
         toast.success(`${activeTab.slice(0, -1)} created successfully`);
       }
       
@@ -85,7 +84,7 @@ const PresetsManagement = () => {
     }
 
     try {
-      await axios.delete(`http://localhost:5000/api/${activeTab}/${item._id}`);
+      await api.delete(`/${activeTab}/${item._id}`);
       toast.success(`${activeTab.slice(0, -1)} deleted successfully`);
       loadData();
     } catch (error) {
