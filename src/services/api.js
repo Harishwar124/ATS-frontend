@@ -5,6 +5,12 @@ const API_BASE_URL = import.meta.env.VITE_API_URL ||
     ? "http://localhost:5000/api" 
     : "https://backend-ats-xspw.onrender.com/api");
 
+console.log('🔧 API Configuration Debug:');
+console.log('  Environment:', import.meta.env.MODE);
+console.log('  VITE_API_URL:', import.meta.env.VITE_API_URL);
+console.log('  Hostname:', window.location.hostname);
+console.log('  Final API_BASE_URL:', API_BASE_URL);
+
 // Create axios instance with default config
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -17,19 +23,26 @@ const api = axios.create({
 // Request interceptor
 api.interceptors.request.use(
   (config) => {
-    console.log(
-      `Making ${config.method?.toUpperCase()} request to: ${config.url}`
-    );
+    console.log('🌐 API Request Debug:');
+    console.log('  Method:', config.method?.toUpperCase());
+    console.log('  URL:', config.url);
+    console.log('  Full URL:', config.baseURL + config.url);
+    console.log('  Headers:', config.headers);
+    console.log('  Data:', config.data);
     
     // Add auth token if available
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+      console.log('  Auth Token:', token.substring(0, 20) + '...');
+    } else {
+      console.log('  No auth token found');
     }
     
     return config;
   },
   (error) => {
+    console.error('❌ Request Interceptor Error:', error);
     return Promise.reject(error);
   }
 );
@@ -37,10 +50,24 @@ api.interceptors.request.use(
 // Response interceptor
 api.interceptors.response.use(
   (response) => {
+    console.log('✅ API Response Debug:');
+    console.log('  Status:', response.status);
+    console.log('  URL:', response.config.url);
+    console.log('  Data:', response.data);
     return response;
   },
   (error) => {
-    console.error("API Error:", error.response?.data || error.message);
+    console.error('❌ API Error Debug:');
+    console.error('  Error:', error);
+    console.error('  Status:', error.response?.status);
+    console.error('  Status Text:', error.response?.statusText);
+    console.error('  URL:', error.config?.url);
+    console.error('  Full URL:', error.config?.baseURL + error.config?.url);
+    console.error('  Response Data:', error.response?.data);
+    console.error('  Response Headers:', error.response?.headers);
+    console.error('  Request Headers:', error.config?.headers);
+    console.error('  Network Error:', error.code);
+    console.error('  Message:', error.message);
     return Promise.reject(error);
   }
 );
