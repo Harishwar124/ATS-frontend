@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'react-hot-toast';
+import api from '../services/api';
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
@@ -8,7 +9,25 @@ const LoginPage = () => {
     password: ''
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
+  const [serverStatus, setServerStatus] = useState('checking');
   const { login } = useAuth();
+
+  // Check server status on component mount
+  useEffect(() => {
+    checkServerStatus();
+  }, []);
+
+  const checkServerStatus = async () => {
+    try {
+      setServerStatus('checking');
+      await api.get('/health');
+      setServerStatus('online');
+    } catch (error) {
+      console.log('Server status check failed:', error);
+      setServerStatus('offline');
+    }
+  };
 
   const handleChange = (e) => {
     setFormData({
@@ -20,16 +39,18 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    setLoadingMessage('Connecting to server...');
 
     const { userid, password } = formData;
 
     if (!userid || !password) {
       toast.error('Please fill in all fields');
       setIsLoading(false);
+      setLoadingMessage('');
       return;
     }
 
-    const result = await login(userid, password);
+    const result = await login(userid, password, setLoadingMessage);
     
     if (result.success) {
       toast.success('Login successful!');
@@ -38,6 +59,7 @@ const LoginPage = () => {
     }
     
     setIsLoading(false);
+    setLoadingMessage('');
   };
 
   return (
@@ -50,6 +72,22 @@ const LoginPage = () => {
           <p className="mt-2 text-center text-sm text-gray-600">
             Applicant Tracking System
           </p>
+          <div className="mt-2 text-center">
+            <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+              serverStatus === 'online' ? 'bg-green-100 text-green-800' :
+              serverStatus === 'offline' ? 'bg-red-100 text-red-800' :
+              'bg-yellow-100 text-yellow-800'
+            }`}>
+              <div className={`w-2 h-2 rounded-full mr-1 ${
+                serverStatus === 'online' ? 'bg-green-400' :
+                serverStatus === 'offline' ? 'bg-red-400' :
+                'bg-yellow-400 animate-pulse'
+              }`}></div>
+              {serverStatus === 'online' ? 'Server Online' :
+               serverStatus === 'offline' ? 'Server Starting...' :
+               'Checking Server...'}
+            </div>
+          </div>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
@@ -94,7 +132,7 @@ const LoginPage = () => {
               {isLoading ? (
                 <div className="flex items-center">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Signing in...
+                  {loadingMessage || 'Signing in...'}
                 </div>
               ) : (
                 'Sign in'
@@ -102,7 +140,21 @@ const LoginPage = () => {
             </button>
           </div>
 
-
+          {serverStatus === 'offline' && (
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <p className="text-xs text-blue-700 text-center mb-2">
+                💡 <strong>Tip:</strong> The server is hosted on Render and may take a few seconds to start up. 
+                If login fails, please wait a moment and try again.
+              </p>
+              <button
+                type="button"
+                onClick={checkServerStatus}
+                className="w-full text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded border border-blue-300 transition-colors"
+              >
+                🔄 Check Server Status
+              </button>
+            </div>
+          )}
         </form>
       </div>
     </div>
