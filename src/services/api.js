@@ -14,7 +14,7 @@ const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-  timeout: 10000,
+  timeout: 60000, // Increased to 60 seconds (1 minute) for Render backend cold starts
 });
 
 // Request interceptor
@@ -65,6 +65,13 @@ api.interceptors.response.use(
     console.error('  Request Headers:', error.config?.headers);
     console.error('  Network Error:', error.code);
     console.error('  Message:', error.message);
+    
+    // Handle timeout errors specifically
+    if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+      console.error('  ⚠️ Timeout detected - this might be due to Render backend cold start');
+      error.message = 'Request timed out. The server might be starting up. Please try again in a few seconds.';
+    }
+    
     return Promise.reject(error);
   }
 );
@@ -171,4 +178,3 @@ export const healthCheck = async () => {
 };
 
 export default api;
-
