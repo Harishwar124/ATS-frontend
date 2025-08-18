@@ -41,23 +41,57 @@ function MainApp() {
     }
   }, [currentView]);
 
-  // Filter applicants when search query changes
+  // Filter applicants when filters change
   useEffect(() => {
-    if (!filters.searchQuery.trim()) {
-      setFilteredApplicants(applicants);
-      return;
+    let filtered = applicants;
+
+    // Search query filter
+    if (filters.searchQuery && filters.searchQuery.trim()) {
+      const query = filters.searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (applicant) =>
+          applicant.fullName?.toLowerCase().includes(query) ||
+          applicant.email?.toLowerCase().includes(query) ||
+          applicant.position?.toLowerCase().includes(query) ||
+          applicant.status?.toLowerCase().includes(query)
+      );
     }
 
-    const query = filters.searchQuery.toLowerCase();
-    const filtered = applicants.filter(
-      (applicant) =>
-        applicant.fullName?.toLowerCase().includes(query) ||
-        applicant.email?.toLowerCase().includes(query) ||
-        applicant.position?.toLowerCase().includes(query) ||
-        applicant.status?.toLowerCase().includes(query)
-    );
+    // Role filter
+    if (filters.role) {
+      filtered = filtered.filter(
+        (applicant) => applicant.position?.toLowerCase() === filters.role.toLowerCase()
+      );
+    }
+
+    // Status filter
+    if (filters.status) {
+      filtered = filtered.filter(
+        (applicant) => applicant.status?.toLowerCase() === filters.status.toLowerCase()
+      );
+    }
+
+    // Application date filter
+    if (filters.applicationDate) {
+      filtered = filtered.filter((applicant) => {
+        const appDate = new Date(applicant.dateOfApplication);
+        const filterDate = new Date(filters.applicationDate);
+        return appDate.toDateString() === filterDate.toDateString();
+      });
+    }
+
+    // Interview date filter
+    if (filters.interviewDate) {
+      filtered = filtered.filter((applicant) => {
+        if (!applicant.interviewDate) return false;
+        const intDate = new Date(applicant.interviewDate);
+        const filterDate = new Date(filters.interviewDate);
+        return intDate.toDateString() === filterDate.toDateString();
+      });
+    }
+
     setFilteredApplicants(filtered);
-  }, [filters.searchQuery, applicants]);
+  }, [filters, applicants]);
 
   const loadApplicants = async () => {
     try {
