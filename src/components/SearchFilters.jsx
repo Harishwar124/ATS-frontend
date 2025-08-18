@@ -155,6 +155,15 @@ const SearchFilters = ({ onFilterChange, onSearch }) => {
               />
             </div>
           </div>
+
+          <div className="flex justify-end pt-4">
+            <button
+              onClick={() => onFilterChange(filters)}
+              className="btn btn-primary"
+            >
+              Apply Filters
+            </button>
+          </div>
         </div>
       )}
     </div>
