@@ -20,14 +20,7 @@ const JOB_ROLES = [
 
 const SearchFilters = ({ onFilterChange, onSearch }) => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [appliedFilters, setAppliedFilters] = useState({
-    searchQuery: '',
-    role: '',
-    status: '',
-    applicationDate: '',
-    interviewDate: ''
-  });
-  const [localFilters, setLocalFilters] = useState({
+  const [filters, setFilters] = useState({
     searchQuery: '',
     role: '',
     status: '',
@@ -35,22 +28,10 @@ const SearchFilters = ({ onFilterChange, onSearch }) => {
     interviewDate: ''
   });
 
-  const handleLocalFilterChange = (key, value) => {
-    const newFilters = { ...localFilters, [key]: value };
-    setLocalFilters(newFilters);
-    
-    // Only apply search query immediately (real-time search)
-    if (key === 'searchQuery') {
-      const updatedApplied = { ...appliedFilters, searchQuery: value };
-      setAppliedFilters(updatedApplied);
-      onFilterChange(updatedApplied);
-    }
-  };
-
-  const applyFilters = () => {
-    setAppliedFilters(localFilters);
-    onFilterChange(localFilters);
-    setIsFilterOpen(false);
+  const handleFilterChange = (key, value) => {
+    const newFilters = { ...filters, [key]: value };
+    setFilters(newFilters);
+    onFilterChange(newFilters);
   };
 
   const clearFilters = () => {
@@ -61,8 +42,7 @@ const SearchFilters = ({ onFilterChange, onSearch }) => {
       applicationDate: '',
       interviewDate: ''
     };
-    setLocalFilters(clearedFilters);
-    setAppliedFilters(clearedFilters);
+    setFilters(clearedFilters);
     onFilterChange(clearedFilters);
   };
 
@@ -77,8 +57,8 @@ const SearchFilters = ({ onFilterChange, onSearch }) => {
           <input
             type="text"
             placeholder="Search by name, email, or phone..."
-            value={localFilters.searchQuery}
-            onChange={(e) => handleLocalFilterChange('searchQuery', e.target.value)}
+            value={filters.searchQuery}
+            onChange={(e) => handleFilterChange('searchQuery', e.target.value)}
             className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
           />
         </div>
@@ -88,7 +68,7 @@ const SearchFilters = ({ onFilterChange, onSearch }) => {
         >
           <Filter size={18} className="mr-2" />
           Filters
-          {Object.values(appliedFilters).some(value => value) && (
+          {Object.values(filters).some(value => value) && (
             <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
               Active
             </span>
@@ -118,8 +98,8 @@ const SearchFilters = ({ onFilterChange, onSearch }) => {
                 Job Role
               </label>
               <select
-                value={localFilters.role}
-                onChange={(e) => handleLocalFilterChange('role', e.target.value)}
+                value={filters.role}
+                onChange={(e) => handleFilterChange('role', e.target.value)}
                 className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
               >
                 <option value="">All Roles</option>
@@ -136,8 +116,8 @@ const SearchFilters = ({ onFilterChange, onSearch }) => {
                 Status
               </label>
               <select
-                value={localFilters.status}
-                onChange={(e) => handleLocalFilterChange('status', e.target.value)}
+                value={filters.status}
+                onChange={(e) => handleFilterChange('status', e.target.value)}
                 className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
               >
                 <option value="">All Status</option>
@@ -155,8 +135,8 @@ const SearchFilters = ({ onFilterChange, onSearch }) => {
               </label>
               <input
                 type="date"
-                value={localFilters.applicationDate}
-                onChange={(e) => handleLocalFilterChange('applicationDate', e.target.value)}
+                value={filters.applicationDate}
+                onChange={(e) => handleFilterChange('applicationDate', e.target.value)}
                 className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
@@ -169,20 +149,11 @@ const SearchFilters = ({ onFilterChange, onSearch }) => {
               </label>
               <input
                 type="date"
-                value={localFilters.interviewDate}
-                onChange={(e) => handleLocalFilterChange('interviewDate', e.target.value)}
+                value={filters.interviewDate}
+                onChange={(e) => handleFilterChange('interviewDate', e.target.value)}
                 className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
-          </div>
-
-          <div className="flex justify-end pt-4">
-            <button
-              onClick={applyFilters}
-              className="btn btn-primary"
-            >
-              Apply Filters
-            </button>
           </div>
         </div>
       )}
