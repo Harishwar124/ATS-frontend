@@ -199,7 +199,8 @@ function MainApp() {
       toast.success("Export completed successfully");
     } catch (error) {
       console.error("Error exporting data:", error);
-      toast.error("Failed to export data");
+      const errorMessage = error.message || "Failed to export data";
+      toast.error(errorMessage);
     } finally {
       setExportLoading(false);
     }
@@ -256,18 +257,20 @@ function MainApp() {
                   </div>
 
                   <div className="flex gap-2 self-end md:self-auto">
-                    <button
-                      onClick={handleExport}
-                      className="btn btn-success"
-                      disabled={exportLoading || applicants.length === 0}
-                    >
-                      {exportLoading ? (
-                        <span className="spinner h-4 w-4 mr-2"></span>
-                      ) : (
-                        <Download size={18} className="mr-2" />
-                      )}
-                      Export
-                    </button>
+                    {isAdmin() && (
+                      <button
+                        onClick={handleExport}
+                        className="btn btn-success"
+                        disabled={exportLoading || applicants.length === 0}
+                      >
+                        {exportLoading ? (
+                          <span className="spinner h-4 w-4 mr-2"></span>
+                        ) : (
+                          <Download size={18} className="mr-2" />
+                        )}
+                        Export
+                      </button>
+                    )}
                     <button
                       onClick={handleAddApplicant}
                       className="btn btn-primary"
