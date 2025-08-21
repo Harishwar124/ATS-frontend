@@ -1,25 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Filter, X, Calendar, Briefcase, CheckCircle2 } from 'lucide-react';
+import api from '../services/api';
 
 const STATUS_OPTIONS = ['Applied', 'Interviewed', 'Hired', 'Rejected'];
-const JOB_ROLES = [
-  "Software Engineer",
-  "Frontend Developer",
-  "Backend Developer",
-  "Full Stack Developer",
-  "DevOps Engineer",
-  "QA Engineer",
-  "Software Architect",
-  "Mobile Developer",
-  "Data Engineer",
-  "Machine Learning Engineer",
-  "Cloud Engineer",
-  "Security Engineer",
-  "Other"
-];
 
 const SearchFilters = ({ onFilterChange, onSearch }) => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [jobRoles, setJobRoles] = useState([]);
+  const [loadingRoles, setLoadingRoles] = useState(true);
   const [filters, setFilters] = useState({
     searchQuery: '',
     role: '',
@@ -27,6 +15,49 @@ const SearchFilters = ({ onFilterChange, onSearch }) => {
     applicationDate: '',
     interviewDate: ''
   });
+
+  // Load job roles from position presets
+  useEffect(() => {
+    const loadJobRoles = async () => {
+      try {
+        setLoadingRoles(true);
+        const response = await api.get('/positions');
+        if (response.data.success && response.data.positions) {
+          const roles = response.data.positions.map(pos => pos.positionName);
+          setJobRoles(roles);
+          console.log(`Loaded ${roles.length} job roles from presets`);
+        } else {
+          throw new Error('Invalid response format');
+        }
+      } catch (error) {
+        console.error('Error loading job roles:', error);
+        // Fallback to default roles if API fails
+        const fallbackRoles = [
+          'Software Engineer',
+          'Frontend Developer',
+          'Backend Developer',
+          'Full Stack Developer',
+          'DevOps Engineer',
+          'QA Engineer',
+          'Software Architect',
+          'Mobile Developer',
+          'Data Engineer',
+          'Machine Learning Engineer',
+          'Cloud Engineer',
+          'Security Engineer',
+          'UI/UX Designer',
+          'Product Manager',
+          'Business Analyst'
+        ];
+        setJobRoles(fallbackRoles);
+        console.log('Using fallback job roles due to API error');
+      } finally {
+        setLoadingRoles(false);
+      }
+    };
+
+    loadJobRoles();
+  }, []);
 
   const handleFilterChange = (key, value) => {
     const newFilters = { ...filters, [key]: value };
@@ -95,17 +126,22 @@ const SearchFilters = ({ onFilterChange, onSearch }) => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 <Briefcase size={16} className="inline mr-1" />
-                Job Role
+                Job Role ({jobRoles.length})
               </label>
               <select
                 value={filters.role}
                 onChange={(e) => handleFilterChange('role', e.target.value)}
                 className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                disabled={loadingRoles}
               >
                 <option value="">All Roles</option>
-                {JOB_ROLES.map(role => (
-                  <option key={role} value={role}>{role}</option>
-                ))}
+                {loadingRoles ? (
+                  <option value="" disabled>Loading roles...</option>
+                ) : (
+                  jobRoles.map(role => (
+                    <option key={role} value={role}>{role}</option>
+                  ))
+                )}
               </select>
             </div>
 
