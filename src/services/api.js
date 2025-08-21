@@ -144,30 +144,37 @@ export const applicantAPI = {
     return response.data;
   },
 
-  // Export to Excel
+  // Export to Excel (Admin only)
   exportToExcel: async (filters) => {
-    const response = await api.get("/applicants/export", {
-      responseType: "blob",
-      params: filters
-    });
+    try {
+      const response = await api.get("/applicants/export", {
+        responseType: "blob",
+        params: filters
+      });
 
-    // Create blob URL and trigger download
-    const blob = new Blob([response.data], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    });
+      // Create blob URL and trigger download
+      const blob = new Blob([response.data], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
 
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `applicants_export_${
-      new Date().toISOString().split("T")[0]
-    }.xlsx`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `applicants_export_${
+        new Date().toISOString().split("T")[0]
+      }.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
 
-    return { success: true, message: "Export completed successfully" };
+      return { success: true, message: "Export completed successfully" };
+    } catch (error) {
+      if (error.response?.status === 403) {
+        throw new Error("Access denied. Admin privileges required for export.");
+      }
+      throw error;
+    }
   },
 };
 
