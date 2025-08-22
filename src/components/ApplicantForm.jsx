@@ -164,9 +164,16 @@ const ApplicantForm = ({
 
   if (!isOpen) return null;
 
+  console.log('ApplicantForm opened:', { 
+    mode: applicant ? 'edit' : 'add', 
+    loading: isLoading,
+    companiesLoaded: companies.length,
+    positionsLoaded: positions.length
+  });
+
   return (
     <div className="modal-backdrop">
-      <div className="modal-content max-w-3xl animate-in fade-in duration-300">
+      <div className="modal-content max-w-4xl animate-in fade-in duration-300">
         <div className="modal-header">
           <h2 className="text-xl font-semibold flex items-center gap-2">
             {applicant ? (
@@ -194,6 +201,17 @@ const ApplicantForm = ({
 
         <form onSubmit={handleSubmit(onFormSubmit)}>
           <div className="modal-body">
+            {/* Form Status Info */}
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded">
+              <p className="text-sm text-blue-800 flex items-center gap-2">
+                <User size={16} />
+                {applicant ? 'Edit Applicant Form' : 'Add New Applicant Form'}
+              </p>
+              <p className="text-xs text-blue-600 mt-1">
+                Status: {isLoading ? 'Loading...' : 'Ready to submit'}
+              </p>
+            </div>
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="form-group">
                 <label className="form-label flex items-center gap-1">
@@ -573,12 +591,25 @@ const ApplicantForm = ({
             </div>
           </div>
 
-          <div className="modal-footer">
+          <div className="modal-footer" style={{ background: '#f9fafb', padding: '16px', borderTop: '1px solid #e5e7eb', display: 'flex', justifyContent: 'flex-end', gap: '8px', minHeight: '70px' }}>
+            {/* Form Actions */}
+            <div className="text-xs text-gray-500 mr-auto flex items-center">
+              <span>Required fields are marked with *</span>
+            </div>
+            
             <button
               type="button"
               onClick={onClose}
               className="btn btn-outline"
               disabled={isLoading}
+              style={{ 
+                padding: '8px 16px', 
+                border: '1px solid #d1d5db', 
+                backgroundColor: 'white', 
+                color: '#374151',
+                borderRadius: '6px',
+                cursor: 'pointer'
+              }}
             >
               Cancel
             </button>
@@ -586,11 +617,22 @@ const ApplicantForm = ({
               type="submit"
               className="btn btn-primary"
               disabled={isLoading}
+              style={{ 
+                padding: '8px 16px', 
+                backgroundColor: '#0ea5e9', 
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
             >
               {isLoading ? (
                 <span className="spinner h-4 w-4 mr-2"></span>
               ) : (
-                <Upload size={16} className="mr-2" />
+                <Upload size={16} />
               )}
               {applicant ? "Update Applicant" : "Save Applicant"}
             </button>
